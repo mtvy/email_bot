@@ -1,26 +1,16 @@
 import schedule
-import datetime
 import psycopg2
 import telebot
 import imaplib
 import config
 import email
 import time
-import json
 import sys
 import io
 import os
 from multiprocessing import *
 from telebot import types
 
-
-
-#with open(path_acc_settings, 'r') as file_set:
-#   if(file_set.readline() == ""): account_settings = {}
-#    else:
-#        file_set.close()
-#        with open(path_acc_settings, 'r') as file_set:
-#            account_settings = json.load(file_set)
 
 bot = telebot.TeleBot(config.TOKEN)
 
@@ -164,140 +154,6 @@ def deletePersonFromDataBase(message):
             print('Error deleting email from user_tb!', error)
             return 0
 
-def insert_new_data(user_id, oper_id):
-    con, cur = connect()
-    if con == 0 and cur == 0:
-        return 0
-    else:
-        try:
-            if oper_id == '0':
-                dt = datetime.date.today()
-                tt = dt.timetuple()
-                date_start = ''
-                ch_i = 0
-                for it in tt:
-                    date_start += str(it)
-                    ch_i += 1
-                    if ch_i >= 3: break
-                    else: date_start += '-'
-                txt_db_com = "INSERT INTO message_tb (user_id, oper_id, date_start, text, status) VALUES (" + user_id + ', ' + oper_id + ", '" + date_start + "', 'TEXT DATABASE', 'open')"
-                cur.execute(txt_db_com)
-                con.commit()
-                print('New data add!')
-                return 1
-            elif user_id != '0' and oper_id != '0':
-                txt_db_com = "UPDATE message_tb SET oper_id = " + oper_id + ", text = '" + "TEXT DATABASE\nOperator: " + oper_id + "\nUser: " + user_id + "\n'" + " WHERE status = 'open' AND user_id = " + user_id
-                cur.execute(txt_db_com)
-                con.commit()
-                print('New data add!')
-                txt_db_com = "SELECT id FROM message_tb WHERE status = 'open' and user_id = " + user_id
-                cur.execute(txt_db_com)
-                ed_text = cur.fetchall()
-                text_adder = ed_text[0]
-                text_adder = '✏️id Переписки: ' + str(text_adder[0])
-                bot.send_message(int(oper_id), text_adder)
-                bot.send_message(int(user_id), text_adder)
-                return 1
-        except Exception as error:
-            print('Error entering new data to message_tb!', error)
-            return 0
-
-def insert_text_to_data(text_val, sm_id):
-    con, cur = connect()
-    if con == 0 and cur == 0:
-        return 0
-    else:
-        try:
-            txt_db_com = "SELECT text FROM message_tb WHERE status = 'open' and (oper_id = " + sm_id + ' or user_id = ' + sm_id + ')'
-            cur.execute(txt_db_com)
-            ed_text = cur.fetchall() 
-            text_adder = ed_text[0]
-            text_adder = text_adder[0] + '\n' + text_val
-            txt_db_com = "UPDATE message_tb SET text = '" + text_adder + "' WHERE status = 'open' and (user_id = " + sm_id + ' or oper_id = ' + sm_id + ')'
-            cur.execute(txt_db_com)
-            con.commit()
-            return 1
-        except Exception as e:
-            print('Error entering data to message_tb!', e)
-            return 0
-
-def closerDataBase(sm_id):
-    con, cur = connect()
-    if con == 0 and cur == 0:
-        return 0
-    else:
-        try:
-            txt_db_com = "SELECT user_id, oper_id FROM message_tb WHERE status = 'open' and (oper_id = " + sm_id + ' or user_id = ' + sm_id + ')'
-            cur.execute(txt_db_com)
-            ed_text = cur.fetchall()
-            if ed_text[0][0] == 0 or ed_text[0][1] == 0:
-                txt_db_com = "delete from message_tb where status = 'open' and (oper_id = " + sm_id + ' or user_id = ' + sm_id + ')'
-                cur.execute(txt_db_com)
-            else:
-                txt_db_com = "UPDATE message_tb SET status = 'close' WHERE status = 'open' and user_id = " + sm_id + ' or oper_id = ' + sm_id
-                cur.execute(txt_db_com)
-            con.commit()
-            return 1
-        except Exception as e:
-            print('Error entering data to message_tb!', e)
-            return 0
-
-def getDataFromDB(date_start):
-    con, cur = connect()
-    if con == 0 and cur == 0:
-        return 0
-    else:
-        try:
-            txt_db_com = "SELECT id, user_id FROM message_tb WHERE date_start = '" + date_start + "'"
-            cur.execute(txt_db_com)
-            ed_text = cur.fetchall()
-            text_adder = 'ID ПОЛЬЗОВАТЕЛЕЙ\n\n'
-            #for i in ed_text:
-            #    for k in account_settings:
-            #        if k == str(i[1]):
-            #            if account_settings[k]['login'] != 'None':
-            #                name_id = '@' + account_settings[k]['login']
-            #            else: name_id = account_settings[k]['name']
-            #            break
-            #    text_adder = text_adder + str(i[0]) + ') ' + 'Name: ' + name_id + ' --- Id: ' + str(i[1]) + '\n'
-            con.commit()
-            if text_adder == 'ID ПОЛЬЗОВАТЕЛЕЙ\n\n': return '0' 
-            else: return text_adder
-        except Exception as e:
-            print('Error data message_tb!', e)
-            return '0'
-
-def getTextFromDB(id_text):
-    con, cur = connect()
-    if con == 0 and cur == 0:
-        return 0
-    else:
-        try:
-            txt_db_com = "SELECT text FROM message_tb WHERE id = " + id_text
-            cur.execute(txt_db_com)
-            ed_text = cur.fetchall()
-            text_taker = ed_text[0]
-            text_taker = text_taker[0]
-            con.commit()
-            return text_taker
-        except Exception as e:
-            print('Error, wrong id!', e)
-            return '0'
-
-def change_data(name):
-    con, cur = connect()
-    if con == 0 or cur == 0:
-        return 0
-    else:
-        try:
-            txt_data_del = "UPDATE user_tb set phone = NULL where name = '" + name + "'"
-            cur.execute(txt_data_del)  
-            con.commit()   
-        except Exception as e:
-            err_txt = 'Error deleting data from user @' + name + '!'
-            print(err_txt, e)
-
-
 def start_process():
     p1 = Process(target=P_schedule.start_schedule, args=()).start()
 class P_schedule():
@@ -381,7 +237,6 @@ def mailSet(user, password, person_id):
             bot.send_document(int(person_id),contents[i], caption = 'Файл №' + str(i + 1) + '\nНазвание файла: ' + name_cont[i])
 
 
-
 @bot.message_handler(commands=['start'])
 def welcome(message):
     if message.chat.id == 281321076 or message.chat.id == 667068180:
@@ -405,8 +260,6 @@ def welcome(message):
             return
     else: bot.send_message(message.chat.id, 'Вас нет в базе данных, обратитесь к оператору!')
 
-
-
 @bot.message_handler(content_types=['text', 'photo'])
 def lol(message):
     if message.chat.type == 'private':
@@ -417,23 +270,6 @@ def lol(message):
             send = bot.send_message(message.chat.id, 'Введите id пользователя для удаления (2353252)')
             bot.register_next_step_handler(send, deletePersonFromDataBase)
 
-@bot.callback_query_handler(func=lambda call: True)
-def callback_inline(call):
-    global new_acc_id
-    global account_settings
-    global mess
-    try:
-        if call.data == 'Русский':
-            bot.delete_message(call.message.chat.id, call.message.message_id)
-            new_acc_id = ""
-            markup = types.InlineKeyboardMarkup(row_width=2)
-            item1 = types.InlineKeyboardButton("Согласен", callback_data='Согласен')
-            item2 = types.InlineKeyboardButton("Отказываюсь", callback_data='Отказываюсь')
-            markup.add(item1, item2)
-       
-    except Exception as e:
-        print(repr(e))
-        
 #RUN
 if __name__ == '__main__':
     start_process()
