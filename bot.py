@@ -216,7 +216,6 @@ def mailSet(user, password, person_id):
     contents = []
     name_cont = []
     for part in raw.walk():
-        #print(part.get_content_type())
         if part.get_content_type() == 'application/pdf':     
                 payload = part.get_payload(decode=True)
                 filename = part.get_filename()
@@ -227,9 +226,7 @@ def mailSet(user, password, person_id):
                     with open(filename, 'rb') as f:
                         contents.append(f.read())
                         name_cont.append(filename)
-                        #print('File was saved!')
                     check_ln = 1
-                    #bot.send_photo(int(person_id), contents)
                     os.remove(filename)
     bot.send_message(int(person_id), '🔔 Email получен от ' + show_bottom[1] + '\n🔔 Username: ' + show_bottom[0] + '\n\n' + email_body_text)
     if check_ln != 0:
