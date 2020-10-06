@@ -205,7 +205,11 @@ def mailSet(user, password, person_id):
     con.select('INBOX')
     result, data = con.search(None, "ALL")
     id_list = data[0].split()
-    latest_email_id = id_list[-1]
+    try:
+        latest_email_id = id_list[-1]
+    except Exception as e:
+        latest_email_id = "b'0'"
+        print(e)
     check_last_email_id = takeLastEmailId(latest_email_id, person_id, user)
     if check_last_email_id != 1: return
     result, data = con.fetch(latest_email_id, ' (RFC822) ')
