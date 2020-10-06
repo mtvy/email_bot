@@ -207,7 +207,7 @@ def mailSet(user, password, person_id):
         result, data = con.search(None, "ALL")
         id_list = data[0].split()
     except Exception as e:
-        print('Error taking email from ' + person_id + '! ' + e)
+        print('Error taking email from ' + person_id + '! ')
         return
     try:
         latest_email_id = id_list[-1]
