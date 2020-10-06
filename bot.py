@@ -16,7 +16,7 @@ bot = telebot.TeleBot(config.TOKEN)
 
 def connect():
     try:
-        con = psycopg2.connect(database="postgres",user="postgres",password="postgres", host="127.0.0.1",port="5432")
+        con = psycopg2.connect(database="postgres",user="postgres",password="14072003", host="127.0.0.1",port="5432")
         cur = con.cursor()
         return con, cur
     except (Exception, psycopg2.DatabaseError) as error:
@@ -197,8 +197,8 @@ def get_body(msg):
         return msg.get_payload(None, True)
 
 def mailSet(user, password, person_id):
-    user ='testt@mail.analizy.uz'
-    password ='~a5#53)OHQ}SwlX=xY5tgty76bnje4cmh'
+    #user ='testt@mail.analizy.uz'
+    #password ='~a5#53)OHQ}SwlX=xY5tgty76bnje4cmh'
     imap_url ='mail.analizy.uz'
     con = imaplib.IMAP4_SSL(imap_url)
     con.login(user,password)
