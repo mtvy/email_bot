@@ -211,7 +211,11 @@ def mailSet(user, password, person_id):
     result, data = con.fetch(latest_email_id, ' (RFC822) ')
     raw = email.message_from_bytes(data[0][1])
     show_bottom = email.utils.parseaddr(raw['From'])
-    email_body_text = get_body(raw).decode("utf-8")
+    try:
+        email_body_text = get_body(raw).decode("utf-8")
+    except Exception as e:
+        email_body_text = get_body(raw)
+        print(e)
     check_ln = 0
     contents = []
     name_cont = []
