@@ -200,11 +200,15 @@ def mailSet(user, password, person_id):
     #user ='testt@mail.analizy.uz'
     #password ='~a5#53)OHQ}SwlX=xY5tgty76bnje4cmh'
     imap_url ='mail.analizy.uz'
-    con = imaplib.IMAP4_SSL(imap_url)
-    con.login(user,password)
-    con.select('INBOX')
-    result, data = con.search(None, "ALL")
-    id_list = data[0].split()
+    try:
+        con = imaplib.IMAP4_SSL(imap_url)
+        con.login(user,password)
+        con.select('INBOX')
+        result, data = con.search(None, "ALL")
+        id_list = data[0].split()
+    except Exception as e:
+        print('Error taking email from ' + person_id + '! ' + e)
+        return
     try:
         latest_email_id = id_list[-1]
     except Exception as e:
